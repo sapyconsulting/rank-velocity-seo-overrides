@@ -1,5 +1,5 @@
 {
-  "version": "2026-03-09T13:01:37.718Z",
+  "version": "2026-03-09T13:02:07.585Z",
   "overrides": [
     {
       "urlPattern": "/anti-counterfeit-solution",
@@ -28,6 +28,28 @@
           "type": "meta",
           "keyword": "brand protection solutions",
           "deployedAt": "2026-03-09T13:01:37.718Z"
+        },
+        {
+          "type": "internalLinks",
+          "keyword": "brand protection solutions",
+          "deployedAt": "2026-03-09T13:02:07.585Z"
+        }
+      ],
+      "injectLinks": [
+        {
+          "anchorText": "Anti counterfeit technology",
+          "href": "/resources/articles/trends-anti-counterfeiting-technology",
+          "position": "after-first-paragraph"
+        },
+        {
+          "anchorText": "Anti counterfeiting solutions",
+          "href": "/anti-counterfeit-solution",
+          "position": "after-first-paragraph"
+        },
+        {
+          "anchorText": "Anti counterfeit packaging",
+          "href": "/resources/articles/anti-counterfeiting-packaging-technologies",
+          "position": "after-first-paragraph"
         }
       ]
     }
