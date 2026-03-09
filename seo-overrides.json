@@ -1,5 +1,5 @@
 {
-  "version": "2026-03-09T13:02:07.585Z",
+  "version": "2026-03-09T13:02:36.901Z",
   "overrides": [
     {
       "urlPattern": "/anti-counterfeit-solution",
@@ -33,6 +33,11 @@
           "type": "internalLinks",
           "keyword": "brand protection solutions",
           "deployedAt": "2026-03-09T13:02:07.585Z"
+        },
+        {
+          "type": "contentSuggestion",
+          "keyword": "brand protection solutions",
+          "deployedAt": "2026-03-09T13:02:36.901Z"
         }
       ],
       "injectLinks": [
@@ -50,6 +55,13 @@
           "anchorText": "Anti counterfeit packaging",
           "href": "/resources/articles/anti-counterfeiting-packaging-technologies",
           "position": "after-first-paragraph"
+        }
+      ],
+      "injectContent": [
+        {
+          "html": "<p>Organizations seeking brand protection solutions are increasingly turning to invisible, zero-hardware solutions that integrate directly into existing packaging workflows. Ennoventure's patented technology enables brands to authenticate products at every touchpoint — from the factory floor to the consumer's smartphone — without adding labels, holograms, or QR codes.</p>",
+          "position": "before-cta",
+          "keyword": "brand protection solutions"
         }
       ]
     }
