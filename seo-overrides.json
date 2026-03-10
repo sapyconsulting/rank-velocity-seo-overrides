@@ -1,5 +1,5 @@
 {
-  "version": "2026-03-10T13:36:33.587Z",
+  "version": "2026-03-10T13:41:13.036Z",
   "overrides": [
     {
       "urlPattern": "/anti-counterfeit-solution",
@@ -105,6 +105,11 @@
           "type": "meta",
           "keyword": "brand protection company",
           "deployedAt": "2026-03-10T13:36:33.587Z"
+        },
+        {
+          "type": "internalLinks",
+          "keyword": "brand protection company",
+          "deployedAt": "2026-03-10T13:41:13.036Z"
         }
       ],
       "injectLinks": [
