@@ -1,5 +1,5 @@
 {
-  "version": "2026-03-10T13:41:13.036Z",
+  "version": "2026-03-10T13:42:24.928Z",
   "overrides": [
     {
       "urlPattern": "/anti-counterfeit-solution",
@@ -20,6 +20,11 @@
           "type": "internalLinks",
           "keyword": "anti counterfeiting solutions",
           "deployedAt": "2026-03-09T13:16:52.113Z"
+        },
+        {
+          "type": "meta",
+          "keyword": "anti counterfeit solutions",
+          "deployedAt": "2026-03-10T13:42:24.928Z"
         }
       ],
       "injectLinks": [
@@ -38,7 +43,10 @@
           "href": "/resources/articles/anti-counterfeiting-packaging-technologies",
           "position": "after-first-paragraph"
         }
-      ]
+      ],
+      "title": "Anti Counterfeit Solutions | Ennoventure",
+      "metaDescription": "Discover leading anti counterfeit solutions from Ennoventure. Protect your brand with invisible, AI-powered authentication. Request a demo today.",
+      "h1": "Anti Counterfeit Solutions"
     },
     {
       "urlPattern": "/solutions/brand-protection-solutions",
