@@ -227,6 +227,6 @@ const SEO_OVERRIDES_URL = 'https://sapyconsulting.github.io/rank-velocity-seo-ov
         pollCount = 0;
         targetText = null;
         clearInterval(aggressivePoll);
-        setInterval(() => { apply(); pollCount++; if (pollCount > 20) clearInterval(this); }, 500);
+        const newPoll = setInterval(() => { apply(); pollCount++; if (pollCount > 20) clearInterval(newPoll); }, 500);
     });
 })();
