@@ -1,5 +1,5 @@
 {
-  "version": "2026-03-11T06:11:07.410Z",
+  "version": "2026-03-11T10:25:30.335Z",
   "overrides": [
     {
       "urlPattern": "/anti-counterfeit-solution",
@@ -57,7 +57,7 @@
       "urlPattern": "/solutions/brand-protection-solutions",
       "title": "Brand Protection Solutions | Ennoventure",
       "metaDescription": "Discover leading brand protection solutions from Ennoventure. Protect your brand with invisible, AI-powered authentication. Request a demo today.",
-      "h1": "Brand Protection Company",
+      "h1": "Brand Protection Solutions",
       "deployments": [
         {
           "type": "meta",
@@ -133,6 +133,11 @@
           "type": "contentSuggestion",
           "keyword": "brand protection company",
           "deployedAt": "2026-03-11T06:11:07.410Z"
+        },
+        {
+          "type": "meta",
+          "keyword": "brand protection solutions",
+          "deployedAt": "2026-03-11T10:25:30.335Z"
         }
       ],
       "injectLinks": [
