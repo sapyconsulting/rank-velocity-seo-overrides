@@ -47,12 +47,62 @@ const SEO_OVERRIDES_URL = "https://sapyconsulting.github.io/rank-velocity-seo-ov
             if (m.content !== config.metaDescription) m.content = config.metaDescription;
         }
 
-        // ─── 2. H1 Override (direct DOM mutation, defended by observer below) ───
-        if (config.h1) {
-            const h1 = document.querySelector("h1");
-            if (h1 && h1.textContent !== config.h1) {
-                h1.textContent = config.h1;
-                h1.setAttribute("data-seo-override", "h1");
+        // ─── 2. H1 Override (Shadow DOM replacement — hydration-proof) ───
+        //
+        // Framer's animated H1 wraps each character in individual <span> elements
+        // managed by React's virtual DOM. Setting textContent gets wiped instantly
+        // by React hydration. Solution: visually hide the original H1 and insert 
+        // a Shadow DOM replacement that React cannot touch.
+        //
+        if (config.h1 && !document.querySelector("seo-h1")) {
+            const originalH1 = document.querySelector("h1");
+            if (originalH1) {
+                // Clone styles from the original H1 for visual consistency
+                const computedStyle = window.getComputedStyle(originalH1);
+                const fontSize = computedStyle.fontSize;
+                const fontWeight = computedStyle.fontWeight;
+                const fontFamily = computedStyle.fontFamily;
+                const color = computedStyle.color;
+                const letterSpacing = computedStyle.letterSpacing;
+                const lineHeight = computedStyle.lineHeight;
+                const textAlign = computedStyle.textAlign;
+
+                // Hide the original H1 (not display:none — keep layout space, just invisible)
+                // We use a CSS class override to avoid React resetting inline styles
+                const hideStyle = document.createElement("style");
+                hideStyle.setAttribute("data-seo-agent", "h1-hider");
+                hideStyle.textContent = `
+                    h1.framer-text { 
+                        visibility: hidden !important; 
+                        height: 0 !important; 
+                        overflow: hidden !important; 
+                        margin: 0 !important; 
+                        padding: 0 !important; 
+                    }
+                `;
+                document.head.appendChild(hideStyle);
+
+                // Insert Shadow DOM H1 right before the original's container
+                const container = originalH1.closest('[data-framer-name="Main Heading"]') || originalH1.parentElement;
+                const el = document.createElement("seo-h1");
+                el.style.display = "block";
+                const shadow = el.attachShadow({ mode: "open" });
+                shadow.innerHTML = `
+                    <h1 style="
+                        font-size: ${fontSize};
+                        font-weight: ${fontWeight};
+                        font-family: ${fontFamily};
+                        color: ${color};
+                        letter-spacing: ${letterSpacing};
+                        line-height: ${lineHeight};
+                        text-align: ${textAlign};
+                        margin: 0;
+                        padding: 0;
+                    ">${config.h1}</h1>
+                `;
+                container.parentNode.insertBefore(el, container);
+
+                console.log("[SEO Agent] H1 replaced via Shadow DOM:", config.h1);
             }
         }
 
@@ -84,7 +134,6 @@ const SEO_OVERRIDES_URL = "https://sapyconsulting.github.io/rank-velocity-seo-ov
                 shadow.innerHTML = config.injectContent.map(c =>
                     `<div style="margin:16px 0;line-height:1.6;font-size:16px;color:inherit;font-family:inherit;">${c.html}</div>`
                 ).join("");
-                // Insert after seo-nav if it exists, otherwise after anchor
                 const navEl = document.querySelector("seo-nav");
                 const insertAfter = navEl || anchor;
                 insertAfter.parentNode.insertBefore(el, insertAfter.nextSibling);
@@ -94,7 +143,6 @@ const SEO_OVERRIDES_URL = "https://sapyconsulting.github.io/rank-velocity-seo-ov
 
     /**
      * Find a suitable paragraph in the main content area to anchor injections.
-     * Avoids nav, footer, header elements.
      */
     function findAnchorParagraph() {
         const paragraphs = document.querySelectorAll("p");
@@ -109,12 +157,9 @@ const SEO_OVERRIDES_URL = "https://sapyconsulting.github.io/rank-velocity-seo-ov
     /**
      * HYDRATION DEFENSE
      * 
-     * Strategy:
-     * - Shadow DOM elements (<seo-nav>, <seo-content>) survive React hydration
-     *   because React doesn't own those custom elements.
-     * - H1 text and Title/Meta DO get wiped by hydration, so we use a 
-     *   MutationObserver that specifically watches for our overrides being reverted.
-     * - We debounce re-applications to prevent infinite loops.
+     * - Shadow DOM elements (<seo-h1>, <seo-nav>, <seo-content>) survive React hydration
+     * - Title/Meta get re-applied by the MutationObserver
+     * - We also re-hide the original H1 if React re-shows it
      */
     let applyTimer = null;
     let lastUrl = window.location.pathname;
@@ -123,17 +168,18 @@ const SEO_OVERRIDES_URL = "https://sapyconsulting.github.io/rank-velocity-seo-ov
         const config = getConfig();
         if (!config) return;
 
-        // Check if any of our overrides got wiped
         const titleWiped = config.title && document.title !== config.title;
-        const h1El = document.querySelector("h1");
-        const h1Wiped = config.h1 && h1El && h1El.textContent !== config.h1;
         const urlChanged = window.location.pathname !== lastUrl;
 
-        if (titleWiped || h1Wiped || urlChanged) {
+        // Check if H1 hider style got removed
+        const hiderGone = config.h1 && !document.querySelector('style[data-seo-agent="h1-hider"]');
+
+        if (titleWiped || urlChanged || hiderGone) {
             if (urlChanged) {
                 lastUrl = window.location.pathname;
-                // Remove Shadow DOM elements on route change so they get re-created for new page
-                document.querySelectorAll("seo-nav, seo-content").forEach(el => el.remove());
+                // Remove all Shadow DOM elements on route change so they get re-created for new page
+                document.querySelectorAll("seo-h1, seo-nav, seo-content").forEach(el => el.remove());
+                document.querySelectorAll('style[data-seo-agent="h1-hider"]').forEach(el => el.remove());
             }
 
             clearTimeout(applyTimer);
@@ -146,7 +192,6 @@ const SEO_OVERRIDES_URL = "https://sapyconsulting.github.io/rank-velocity-seo-ov
     // ─── INITIALIZATION ───
     loadConfig();
 
-    // Start observer once body exists
     function startObserver() {
         if (document.body) {
             observer.observe(document.documentElement, {
@@ -163,8 +208,6 @@ const SEO_OVERRIDES_URL = "https://sapyconsulting.github.io/rank-velocity-seo-ov
     // SPA navigation handler
     window.addEventListener("popstate", loadConfig);
 
-    // Safety net: re-apply after React's typical hydration window (2-4 seconds)
-    setTimeout(() => {
-        apply();
-    }, 3500);
+    // Safety net: re-apply after React hydration window
+    setTimeout(() => { apply(); }, 3500);
 })();
