@@ -95,8 +95,9 @@ const SEO_OVERRIDES_URL = 'https://sapyconsulting.github.io/rank-velocity-seo-ov
 
                 const cs = window.getComputedStyle(h1);
 
-                // Don't replace hidden/invisible H1s (like mobile/desktop toggles that are display:none)
-                if (cs.display === 'none' || cs.visibility === 'hidden') return;
+                // Don't replace truly hidden H1s (like mobile/desktop toggles that are completely removed from flow)
+                // We don't check cs.visibility here because our own global `h1-hider` style might have just set it to 'hidden'!
+                if (cs.display === 'none') return;
 
                 const el = document.createElement("seo-h1");
                 el.setAttribute("data-index", index);
