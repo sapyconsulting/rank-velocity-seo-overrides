@@ -88,7 +88,7 @@ const SEO_OVERRIDES_URL = 'https://sapyconsulting.github.io/rank-velocity-seo-ov
                     // Skip unrelated secondary H1s further down the page
                     if (h1.textContent.trim() !== targetText) return;
 
-                    const container = h1.closest('[data-framer-name]') || h1.parentElement;
+                    const container = h1.parentElement;
                     if (!container || container.querySelector(`seo-h1[data-index="${index}"]`)) return;
 
                     const cs = window.getComputedStyle(h1);
@@ -129,7 +129,7 @@ const SEO_OVERRIDES_URL = 'https://sapyconsulting.github.io/rank-velocity-seo-ov
                         ">${config.h1}</h1>
                     `;
 
-                    container.parentNode.insertBefore(el, container);
+                    h1.parentElement.insertBefore(el, h1);
                     h1.style.setProperty('display', 'none', 'important');
                 });
             }
