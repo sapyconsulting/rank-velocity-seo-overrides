@@ -1,5 +1,5 @@
 /**
- * Framer SEO Overlay Script — V6 (Strict Hero Match & Accessibility Filter)
+ * Framer SEO Overlay Script — V6.2 (Ghost Header Text Bypass)
  * ─────────────────────────────────────────────────────────────────
  *
  * Install in Framer:
@@ -54,7 +54,7 @@ const SEO_OVERRIDES_URL = 'https://sapyconsulting.github.io/rank-velocity-seo-ov
             if (m.content !== config.metaDescription) m.content = config.metaDescription;
         }
 
-        // 2. Strict Hero-H1 Override (Shadow DOM)
+        // 2. Strict Hero-H1 Override (Shadow DOM for visible, raw text for SSR)
         if (config.h1) {
             const originalH1s = Array.from(document.querySelectorAll("h1"));
 
@@ -65,33 +65,41 @@ const SEO_OVERRIDES_URL = 'https://sapyconsulting.github.io/rank-velocity-seo-ov
                     const text = h.textContent.trim();
                     const cs = window.getComputedStyle(h);
 
-                    // Ignore Framer invisible accessibility tags and hidden parents
+                    // Identify the ACTUAL visual banner (not hidden SSR/accessibility)
                     if (text && rect.width >= 5 && rect.height >= 5 && cs.display !== 'none' && cs.position !== 'absolute') {
                         targetText = text;
                         break;
                     }
                 }
-                // Fallback to first if layout hasn't painted yet
+                // Fallback
                 if (!targetText && originalH1s[0]) targetText = originalH1s[0].textContent.trim();
             }
 
-            // Pass 2: Replace ONLY the H1s that exactly match the Hero text string
-            // This naturally replaces Desktop/Mobile duplicates while ignoring secondary H1s down the page.
+            // Pass 2: Replace only the matched Hero strings
             if (targetText && originalH1s.length > 0) {
                 originalH1s.forEach((h1, index) => {
-                    const rect = h1.getBoundingClientRect();
-
-                    // V6 Critical Fix: NEVER touch Framer's hidden accessibility tags at the top of the body
-                    const isAccessibilityHidden = rect.width < 5 || rect.height < 5 || window.getComputedStyle(h1).display === 'none' || window.getComputedStyle(h1).position === 'absolute' || window.getComputedStyle(h1).opacity === '0';
-                    if (isAccessibilityHidden) return;
-
-                    // Skip unrelated secondary H1s further down the page
+                    // Skip unrelated secondary H1s further down the page completely
                     if (h1.textContent.trim() !== targetText) return;
 
+                    const rect = h1.getBoundingClientRect();
+                    const cs = window.getComputedStyle(h1);
+
+                    // Identify visually hidden Framer SSR tags (or tags stuffed behind navbar at top < 50)
+                    const isGhost = rect.top < 50 || rect.width < 5 || rect.height < 5 || cs.display === 'none' || cs.opacity === '0';
+
+                    if (isGhost) {
+                        // Swap raw text for SEO bots, but LEAVE native Framer CSS alone so it stays securely hidden!
+                        if (h1.textContent !== config.h1) {
+                            h1.textContent = config.h1;
+                        }
+                        return;
+                    }
+
+                    // Otherwise, this is the main VISIBLE Hero H1.
+                    // Use Shadow DOM to safely restyle the visible text without breaking its Framer positioning CSS
                     const container = h1.parentElement;
                     if (!container || container.querySelector(`seo-h1[data-index="${index}"]`)) return;
 
-                    const cs = window.getComputedStyle(h1);
                     const el = document.createElement("seo-h1");
                     el.setAttribute("data-index", index);
 
@@ -129,14 +137,14 @@ const SEO_OVERRIDES_URL = 'https://sapyconsulting.github.io/rank-velocity-seo-ov
                         ">${config.h1}</h1>
                     `;
 
-                    h1.parentElement.insertBefore(el, h1);
+                    // Inject perfectly next to h1 so it seamlessly inherits any Framer SSR/mobile component visibility
+                    container.insertBefore(el, h1);
                     h1.style.setProperty('display', 'none', 'important');
                 });
             }
         }
 
-        // 3. Links & Content
-        // Code intentionally kept brief to focus on the H1 fix. Content blocks injected normally.
+        // 3. Links & Content injection
         const anchor = findAnchorParagraph();
         if (config.injectLinks?.length && !document.querySelector("seo-nav") && anchor && anchor.parentNode) {
             const el = document.createElement("seo-nav");
@@ -185,7 +193,6 @@ const SEO_OVERRIDES_URL = 'https://sapyconsulting.github.io/rank-velocity-seo-ov
         const titleWiped = config.title && document.title !== config.title;
         const urlChanged = window.location.pathname !== lastUrl;
 
-        // Also check if our shadow DOM H1s were mysteriously destroyed by React
         let shadowH1Missing = false;
         if (config.h1) {
             const numH1s = document.querySelectorAll("h1").length;
@@ -196,7 +203,7 @@ const SEO_OVERRIDES_URL = 'https://sapyconsulting.github.io/rank-velocity-seo-ov
         if (titleWiped || urlChanged || shadowH1Missing) {
             if (urlChanged) {
                 lastUrl = window.location.pathname;
-                targetText = null; // Reset matching text for new page route!
+                targetText = null;
                 document.querySelectorAll("seo-h1, seo-nav, seo-content").forEach(e => e.remove());
             }
             clearTimeout(applyTimer);
