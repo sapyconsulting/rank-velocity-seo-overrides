@@ -1,5 +1,5 @@
 {
-  "version": "2026-03-11T10:25:30.335Z",
+  "version": "2026-03-11T10:27:48.710Z",
   "overrides": [
     {
       "urlPattern": "/anti-counterfeit-solution",
@@ -138,6 +138,11 @@
           "type": "meta",
           "keyword": "brand protection solutions",
           "deployedAt": "2026-03-11T10:25:30.335Z"
+        },
+        {
+          "type": "contentSuggestion",
+          "keyword": "brand protection solutions",
+          "deployedAt": "2026-03-11T10:27:48.710Z"
         }
       ],
       "injectLinks": [
@@ -177,6 +182,11 @@
           "html": "<p>As counterfeiting costs the global economy hundreds of billions annually, brand protection company has become a boardroom priority. Ennoventure's solution has been deployed across pharmaceuticals, FMCG, automotive, and luxury goods — delivering measurable ROI within the first quarter of deployment.</p>",
           "position": "before-cta",
           "keyword": "brand protection company"
+        },
+        {
+          "html": "<p>Organizations seeking brand protection solutions are increasingly turning to invisible, zero-hardware solutions that integrate directly into existing packaging workflows. Ennoventure's patented technology enables brands to authenticate products at every touchpoint — from the factory floor to the consumer's smartphone — without adding labels, holograms, or QR codes.</p>",
+          "position": "before-cta",
+          "keyword": "brand protection solutions"
         }
       ]
     }
