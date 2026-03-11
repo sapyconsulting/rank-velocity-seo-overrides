@@ -1,5 +1,5 @@
-// Rank Velocity Agent V2: Smart Overlay
-// Hosted version for Framer Custom Code
+// Rank Velocity Agent V3: Hydration-Safe SEO Overlay
+// Hosted at: https://sapyconsulting.github.io/rank-velocity-seo-overrides/framer-overlay.js
 
 const SEO_OVERRIDES_URL = "https://sapyconsulting.github.io/rank-velocity-seo-overrides/seo-overrides.json";
 
@@ -9,132 +9,162 @@ const SEO_OVERRIDES_URL = "https://sapyconsulting.github.io/rank-velocity-seo-ov
     // Disable in Framer Editor
     if (window.__framer_importFromPackage || window.location.hostname === "framer.com") return;
 
-    async function applySEO() {
+    let overrides = [];
+
+    async function loadConfig() {
         try {
             const res = await fetch(SEO_OVERRIDES_URL + "?t=" + Date.now(), { cache: "no-store" });
             if (!res.ok) return;
+            const data = await res.json();
+            overrides = data.overrides || [];
+            apply();
+        } catch (e) { console.error("[SEO Agent] Config load error:", e); }
+    }
 
-            const config = await res.json();
-            const currentPath = window.location.pathname.replace(/\/+$/, "") || "/";
+    function getConfig() {
+        const path = window.location.pathname.replace(/\/+$/, '') || '/';
+        return overrides.find(o => (o.urlPattern.replace(/\/+$/, '') || '/') === path);
+    }
 
-            const v = config.overrides?.find(x => (x.urlPattern.replace(/\/+$/, "") || "/") === currentPath);
-            if (!v) return;
+    function apply() {
+        const config = getConfig();
+        if (!config) return;
 
-            // 1. Meta & Title
-            if (v.title) document.title = v.title;
+        console.log("[SEO Agent] Applying overrides for", window.location.pathname);
 
-            if (v.metaDescription) {
-                let m = document.querySelector('meta[name="description"]');
-                if (!m) {
-                    m = document.createElement("meta");
-                    m.name = "description";
-                    m.setAttribute("data-seo-agent", "1");
-                    document.head.appendChild(m);
-                }
-                m.content = v.metaDescription;
+        // ─── 1. Title & Meta (lightweight, always safe to re-apply) ───
+        if (config.title && document.title !== config.title) {
+            document.title = config.title;
+        }
+
+        if (config.metaDescription) {
+            let m = document.querySelector('meta[name="description"]');
+            if (!m) {
+                m = document.createElement("meta");
+                m.name = "description";
+                document.head.appendChild(m);
             }
+            if (m.content !== config.metaDescription) m.content = config.metaDescription;
+        }
 
-            // 2. H1 Override
-            if (v.h1) {
-                let h = document.querySelector("h1");
-                if (h) {
-                    h.textContent = v.h1;
-                    h.setAttribute("data-seo-agent", "1");
-                } else {
-                    let main = document.querySelector("main") || document.body;
-                    let nh = document.createElement("h1");
-                    nh.textContent = v.h1;
-                    nh.setAttribute("data-seo-agent", "1");
-                    nh.style.margin = "0 0 16px 0";
-                    main.prepend(nh);
-                }
+        // ─── 2. H1 Override (direct DOM mutation, defended by observer below) ───
+        if (config.h1) {
+            const h1 = document.querySelector("h1");
+            if (h1 && h1.textContent !== config.h1) {
+                h1.textContent = config.h1;
+                h1.setAttribute("data-seo-override", "h1");
             }
+        }
 
-            // 3. Related Links
-            if (v.injectLinks?.length) {
-                let n = document.createElement("nav");
-                n.setAttribute("data-seo-agent", "1");
-                n.style.cssText = "margin:24px 0;padding:16px;border-top:1px solid rgba(0,0,0,0.1);border-bottom:1px solid rgba(0,0,0,0.1)";
-                n.innerHTML = "<p style='font-weight:600;margin-bottom:8px;font-size:14px;opacity:0.7'>Related Resources</p>";
-
-                let u = document.createElement("ul");
-                u.style.cssText = "list-style:none;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:12px";
-
-                for (let l of v.injectLinks) {
-                    let li = document.createElement("li"), a = document.createElement("a");
-                    a.href = l.href;
-                    a.textContent = l.anchorText;
-                    a.style.cssText = "color:inherit;text-decoration:underline;text-underline-offset:3px;font-size:14px";
-                    li.appendChild(a);
-                    u.appendChild(li);
-                }
-                n.appendChild(u);
-
-                let t = findPos("after-first-paragraph");
-                if (t && t.parentNode) t.parentNode.insertBefore(n, t.nextSibling);
-                else (document.querySelector("main") || document.body).appendChild(n);
+        // ─── 3. Internal Links (Shadow DOM — hydration-safe) ───
+        if (config.injectLinks?.length && !document.querySelector("seo-nav")) {
+            const anchor = findAnchorParagraph();
+            if (anchor && anchor.parentNode) {
+                const el = document.createElement("seo-nav");
+                const shadow = el.attachShadow({ mode: "open" });
+                shadow.innerHTML = `
+                    <nav style="margin:24px 0;padding:16px;border-top:1px solid rgba(0,0,0,0.1);border-bottom:1px solid rgba(0,0,0,0.1);">
+                        <p style="font-weight:600;margin-bottom:8px;font-size:14px;opacity:0.7;">Related Resources</p>
+                        <ul style="list-style:none;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:12px;">
+                            ${config.injectLinks.map(l =>
+                    `<li><a href="${l.href}" style="color:inherit;text-decoration:underline;text-underline-offset:3px;font-size:14px;">${l.anchorText}</a></li>`
+                ).join("")}
+                        </ul>
+                    </nav>`;
+                anchor.parentNode.insertBefore(el, anchor.nextSibling);
             }
+        }
 
-            // 4. Content Blocks
-            if (v.injectContent?.length) {
-                for (let x of v.injectContent) {
-                    let w = document.createElement("div");
-                    w.setAttribute("data-seo-agent", "1");
-                    w.className = "seo-injected-block";
-                    w.style.cssText = "margin:40px auto;padding:32px;max-width:800px;width:100%;background:rgba(255,255,255,0.03);border-radius:16px;border:1px solid rgba(0,0,0,0.05);color:inherit;line-height:1.6;box-sizing:border-box";
-                    w.innerHTML = x.html;
-
-                    let t = findPos(x.position || "safe");
-                    if (t && t.parentNode) t.parentNode.insertBefore(w, t);
-                    else (document.querySelector("main") || document.body).appendChild(w);
-                }
+        // ─── 4. Content Blocks (Shadow DOM — hydration-safe) ───
+        if (config.injectContent?.length && !document.querySelector("seo-content")) {
+            const anchor = findAnchorParagraph();
+            if (anchor && anchor.parentNode) {
+                const el = document.createElement("seo-content");
+                const shadow = el.attachShadow({ mode: "open" });
+                shadow.innerHTML = config.injectContent.map(c =>
+                    `<div style="margin:16px 0;line-height:1.6;font-size:16px;color:inherit;font-family:inherit;">${c.html}</div>`
+                ).join("");
+                // Insert after seo-nav if it exists, otherwise after anchor
+                const navEl = document.querySelector("seo-nav");
+                const insertAfter = navEl || anchor;
+                insertAfter.parentNode.insertBefore(el, insertAfter.nextSibling);
             }
-        } catch (e) {
-            console.warn("[SEO Agent] Error:", e);
         }
     }
 
-    function findPos(p) {
-        const s = Array.from(document.querySelectorAll("div,section,article")).filter(e => {
-            if (e.closest('nav,footer,header,[data-framer-name*="Nav"],[data-framer-name*="Footer"]')) return false;
-            const len = e.textContent.trim().length;
-            return len > 300 && len < 5000;
-        });
-
-        if (p === "after-first-paragraph") {
-            for (let pT of document.querySelectorAll("p")) {
-                if (pT.textContent.trim().length > 50 && !pT.closest("nav,footer,header")) return pT.nextSibling || pT;
+    /**
+     * Find a suitable paragraph in the main content area to anchor injections.
+     * Avoids nav, footer, header elements.
+     */
+    function findAnchorParagraph() {
+        const paragraphs = document.querySelectorAll("p");
+        for (const p of paragraphs) {
+            if (p.textContent.trim().length > 40 && !p.closest("nav, footer, header")) {
+                return p;
             }
-            return s[0] || document.querySelector("h1")?.parentNode;
         }
-
-        if (s.length > 0) return s[s.length - 1].nextSibling;
-        return document.querySelectorAll("h2,h3")[0] || null;
+        return null;
     }
 
-    // Defend against Hydration Wipes
-    let isApplying = false, timer = null, lastUrl = window.location.pathname;
+    /**
+     * HYDRATION DEFENSE
+     * 
+     * Strategy:
+     * - Shadow DOM elements (<seo-nav>, <seo-content>) survive React hydration
+     *   because React doesn't own those custom elements.
+     * - H1 text and Title/Meta DO get wiped by hydration, so we use a 
+     *   MutationObserver that specifically watches for our overrides being reverted.
+     * - We debounce re-applications to prevent infinite loops.
+     */
+    let applyTimer = null;
+    let lastUrl = window.location.pathname;
+
     const observer = new MutationObserver(() => {
-        if (isApplying) return;
+        const config = getConfig();
+        if (!config) return;
 
-        const hasTags = document.querySelector('[data-seo-agent="1"]') !== null;
+        // Check if any of our overrides got wiped
+        const titleWiped = config.title && document.title !== config.title;
+        const h1El = document.querySelector("h1");
+        const h1Wiped = config.h1 && h1El && h1El.textContent !== config.h1;
         const urlChanged = window.location.pathname !== lastUrl;
 
-        if (!hasTags || urlChanged) {
-            if (urlChanged) lastUrl = window.location.pathname;
-            clearTimeout(timer);
-            timer = setTimeout(async () => {
-                isApplying = true;
-                await applySEO();
-                isApplying = false;
-            }, 300);
+        if (titleWiped || h1Wiped || urlChanged) {
+            if (urlChanged) {
+                lastUrl = window.location.pathname;
+                // Remove Shadow DOM elements on route change so they get re-created for new page
+                document.querySelectorAll("seo-nav, seo-content").forEach(el => el.remove());
+            }
+
+            clearTimeout(applyTimer);
+            applyTimer = setTimeout(() => {
+                apply();
+            }, 200);
         }
     });
 
-    observer.observe(document.body, { childList: true, subtree: true });
+    // ─── INITIALIZATION ───
+    loadConfig();
 
-    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", applySEO);
-    else requestAnimationFrame(applySEO);
+    // Start observer once body exists
+    function startObserver() {
+        if (document.body) {
+            observer.observe(document.documentElement, {
+                childList: true,
+                subtree: true,
+                characterData: true
+            });
+        } else {
+            requestAnimationFrame(startObserver);
+        }
+    }
+    startObserver();
 
-    setTimeout(applySEO, 3000);
+    // SPA navigation handler
+    window.addEventListener("popstate", loadConfig);
+
+    // Safety net: re-apply after React's typical hydration window (2-4 seconds)
+    setTimeout(() => {
+        apply();
+    }, 3500);
 })();
