@@ -1,15 +1,10 @@
 /**
- * Framer SEO Overlay Script — V3.2 (Hydration-Safe, Multi-H1 Shadow DOM)
+ * Framer SEO Overlay Script — V6 (Strict Hero Match & Accessibility Filter)
  * ─────────────────────────────────────────────────────────────────
  *
  * Install in Framer:
  *   Settings → General → Custom Code → End of <body>
  *   <script src="https://sapyconsulting.github.io/rank-velocity-seo-overrides/framer-overlay.js"></script>
- *
- * Updates in V3.2:
- * - Targets ALL h1 elements on the page (Framer sometimes splits layout into multiple H1s)
- * - CSS hider expanded to catch .responsive-title and other common Framer heading classes
- * - More resilient MutationObserver to prevent React from wiping the Shadow DOM containers
  */
 
 const SEO_OVERRIDES_URL = 'https://sapyconsulting.github.io/rank-velocity-seo-overrides/seo-overrides.json';
@@ -20,6 +15,7 @@ const SEO_OVERRIDES_URL = 'https://sapyconsulting.github.io/rank-velocity-seo-ov
     if (window.__framer_importFromPackage || window.location.hostname === "framer.com") return;
 
     let overrides = [];
+    let targetText = null;
 
     async function loadConfig() {
         try {
@@ -43,8 +39,6 @@ const SEO_OVERRIDES_URL = 'https://sapyconsulting.github.io/rank-velocity-seo-ov
         const config = getConfig();
         if (!config) return;
 
-        console.log("[SEO Agent] Applying V3.2 overrides for", window.location.pathname);
-
         // 1. Title & Meta
         if (config.title && document.title !== config.title) {
             document.title = config.title;
@@ -60,86 +54,89 @@ const SEO_OVERRIDES_URL = 'https://sapyconsulting.github.io/rank-velocity-seo-ov
             if (m.content !== config.metaDescription) m.content = config.metaDescription;
         }
 
-        // 2. Multi-H1 Override (Shadow DOM)
+        // 2. Strict Hero-H1 Override (Shadow DOM)
         if (config.h1) {
-            const originalH1s = document.querySelectorAll("h1");
+            const originalH1s = Array.from(document.querySelectorAll("h1"));
 
-            // Inject global hider style once
-            if (!document.querySelector('style[data-seo-agent="h1-hider"]')) {
-                const hideStyle = document.createElement("style");
-                hideStyle.setAttribute("data-seo-agent", "h1-hider");
-                // Catch all common Framer H1 variations 
-                hideStyle.textContent = `
-                    h1.framer-text, 
-                    h1.responsive-title, 
-                    h1[data-framer-component-type="RichTextContainer"] h1,
-                    .framer-text:has(span) /* Fallback for animated spans outside exact H1 class */
-                    { 
-                        visibility: hidden !important; 
-                        height: 0 !important; 
-                        overflow: hidden !important; 
-                        margin: 0 !important; 
-                        padding: 0 !important; 
-                        position: absolute !important;
+            // Pass 1: Find the exact text string of the primary Hero H1
+            if (!targetText && originalH1s.length > 0) {
+                for (const h of originalH1s) {
+                    const rect = h.getBoundingClientRect();
+                    const text = h.textContent.trim();
+                    const cs = window.getComputedStyle(h);
+
+                    // Ignore Framer invisible accessibility tags and hidden parents
+                    if (text && rect.width >= 5 && rect.height >= 5 && cs.display !== 'none' && cs.position !== 'absolute') {
+                        targetText = text;
+                        break;
                     }
-                `;
-                document.head.appendChild(hideStyle);
+                }
+                // Fallback to first if layout hasn't painted yet
+                if (!targetText && originalH1s[0]) targetText = originalH1s[0].textContent.trim();
             }
 
-            originalH1s.forEach((h1, index) => {
-                // Check if this specific H1 already has a shadow replacement next to it
-                const container = h1.closest('[data-framer-name]') || h1.parentElement;
+            // Pass 2: Replace ONLY the H1s that exactly match the Hero text string
+            // This naturally replaces Desktop/Mobile duplicates while ignoring secondary H1s down the page.
+            if (targetText && originalH1s.length > 0) {
+                originalH1s.forEach((h1, index) => {
+                    const rect = h1.getBoundingClientRect();
 
-                // If container is already handling a shadow DOM, skip
-                if (container.querySelector(`seo-h1[data-index="${index}"]`)) return;
+                    // V6 Critical Fix: NEVER touch Framer's hidden accessibility tags at the top of the body
+                    const isAccessibilityHidden = rect.width < 5 || rect.height < 5 || window.getComputedStyle(h1).display === 'none' || window.getComputedStyle(h1).position === 'absolute' || window.getComputedStyle(h1).opacity === '0';
+                    if (isAccessibilityHidden) return;
 
-                const cs = window.getComputedStyle(h1);
+                    // Skip unrelated secondary H1s further down the page
+                    if (h1.textContent.trim() !== targetText) return;
 
-                // Don't replace truly hidden H1s (like mobile/desktop toggles that are completely removed from flow)
-                // We don't check cs.visibility here because our own global `h1-hider` style might have just set it to 'hidden'!
-                if (cs.display === 'none') return;
+                    const container = h1.closest('[data-framer-name]') || h1.parentElement;
+                    if (!container || container.querySelector(`seo-h1[data-index="${index}"]`)) return;
 
-                const el = document.createElement("seo-h1");
-                el.setAttribute("data-index", index);
-                el.style.display = "block";
-                const shadow = el.attachShadow({ mode: "open" });
+                    const cs = window.getComputedStyle(h1);
+                    const el = document.createElement("seo-h1");
+                    el.setAttribute("data-index", index);
 
-                // Try to extract exact font size/weight/family from the first child span if available (Framer animations)
-                const firstSpan = h1.querySelector('span');
-                const spanCs = firstSpan ? window.getComputedStyle(firstSpan) : cs;
+                    el.style.display = "flex";
+                    el.style.width = "100%";
+                    el.style.flexDirection = "column";
+                    el.style.alignItems = cs.alignItems || "flex-start";
+                    el.style.textAlign = cs.textAlign || "inherit";
+                    if (cs.placeContent) el.style.placeContent = cs.placeContent;
 
-                // Fallbacks ensures we don't get 'undefined'
-                const fontSize = spanCs.fontSize || cs.fontSize || '48px';
-                const fontWeight = spanCs.fontWeight || cs.fontWeight || 'bold';
-                const fontFamily = spanCs.fontFamily || cs.fontFamily || 'inherit';
-                const color = spanCs.color || cs.color || 'inherit';
-                const letterSpacing = spanCs.letterSpacing || cs.letterSpacing || 'normal';
-                const lineHeight = spanCs.lineHeight || cs.lineHeight || '1.2';
-                const textAlign = spanCs.textAlign || cs.textAlign || 'inherit';
+                    const shadow = el.attachShadow({ mode: "open" });
+                    const firstSpan = h1.querySelector('span');
+                    const spanCs = firstSpan ? window.getComputedStyle(firstSpan) : cs;
 
-                shadow.innerHTML = `
-                    <h1 style="
-                        font-size: ${fontSize};
-                        font-weight: ${fontWeight};
-                        font-family: ${fontFamily};
-                        color: ${color};
-                        letter-spacing: ${letterSpacing};
-                        line-height: ${lineHeight};
-                        text-align: ${textAlign};
-                        margin: 0;
-                        padding: 0;
-                    ">${config.h1}</h1>
-                `;
+                    const fontSize = spanCs.fontSize || cs.fontSize || '48px';
+                    const fontWeight = spanCs.fontWeight || cs.fontWeight || 'bold';
+                    const fontFamily = spanCs.fontFamily || cs.fontFamily || 'inherit';
+                    const color = spanCs.color || cs.color || 'inherit';
+                    const letterSpacing = spanCs.letterSpacing || cs.letterSpacing || 'normal';
+                    const lineHeight = spanCs.lineHeight || cs.lineHeight || '1.2';
+                    const textAlign = spanCs.textAlign || cs.textAlign || 'inherit';
 
-                container.parentNode.insertBefore(el, container);
-                console.log(`[SEO Agent] H1 (#${index}) replaced via Shadow DOM`);
+                    shadow.innerHTML = `
+                        <h1 style="
+                            font-size: ${fontSize};
+                            font-weight: ${fontWeight};
+                            font-family: ${fontFamily};
+                            color: ${color};
+                            letter-spacing: ${letterSpacing};
+                            line-height: ${lineHeight};
+                            text-align: ${textAlign};
+                            margin: 0;
+                            padding: 0;
+                            display: inline-block;
+                        ">${config.h1}</h1>
+                    `;
 
-                // Hide the original directly as a fallback just in case CSS missed it
-                h1.style.setProperty('display', 'none', 'important');
-            });
+                    container.parentNode.insertBefore(el, container);
+                    h1.style.setProperty('display', 'none', 'important');
+                });
+            }
         }
 
         // 3. Links & Content
+        // Code intentionally kept brief to focus on the H1 fix. Content blocks injected normally.
         const anchor = findAnchorParagraph();
         if (config.injectLinks?.length && !document.querySelector("seo-nav") && anchor && anchor.parentNode) {
             const el = document.createElement("seo-nav");
@@ -187,7 +184,6 @@ const SEO_OVERRIDES_URL = 'https://sapyconsulting.github.io/rank-velocity-seo-ov
 
         const titleWiped = config.title && document.title !== config.title;
         const urlChanged = window.location.pathname !== lastUrl;
-        const hiderGone = config.h1 && !document.querySelector('style[data-seo-agent="h1-hider"]');
 
         // Also check if our shadow DOM H1s were mysteriously destroyed by React
         let shadowH1Missing = false;
@@ -197,10 +193,11 @@ const SEO_OVERRIDES_URL = 'https://sapyconsulting.github.io/rank-velocity-seo-ov
             if (numH1s > 0 && numShadows === 0) shadowH1Missing = true;
         }
 
-        if (titleWiped || urlChanged || hiderGone || shadowH1Missing) {
+        if (titleWiped || urlChanged || shadowH1Missing) {
             if (urlChanged) {
                 lastUrl = window.location.pathname;
-                document.querySelectorAll("seo-h1, seo-nav, seo-content, style[data-seo-agent]").forEach(e => e.remove());
+                targetText = null; // Reset matching text for new page route!
+                document.querySelectorAll("seo-h1, seo-nav, seo-content").forEach(e => e.remove());
             }
             clearTimeout(applyTimer);
             applyTimer = setTimeout(apply, 200);
@@ -209,14 +206,11 @@ const SEO_OVERRIDES_URL = 'https://sapyconsulting.github.io/rank-velocity-seo-ov
 
     loadConfig();
 
-    // V3.4 Aggressive Polling: Framer React hydration can be incredibly slow and chaotic.
-    // Rather than trusting DOMContentLoaded or a single setTimeout, we forcefully
-    // hammer the apply() function every 500ms for the first 10 seconds of the page life.
     let pollCount = 0;
     const aggressivePoll = setInterval(() => {
         apply();
         pollCount++;
-        if (pollCount > 20) clearInterval(aggressivePoll); // Stop after 10 seconds
+        if (pollCount > 20) clearInterval(aggressivePoll);
     }, 500);
 
     if (document.body) {
@@ -230,8 +224,8 @@ const SEO_OVERRIDES_URL = 'https://sapyconsulting.github.io/rank-velocity-seo-ov
 
     window.addEventListener("popstate", () => {
         loadConfig();
-        // Re-trigger aggressive polling on route changes (Framer single-page navigations)
         pollCount = 0;
+        targetText = null;
         clearInterval(aggressivePoll);
         setInterval(() => { apply(); pollCount++; if (pollCount > 20) clearInterval(this); }, 500);
     });
