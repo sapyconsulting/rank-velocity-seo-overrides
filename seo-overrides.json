@@ -1,9 +1,14 @@
 {
-  "version": "2026-03-11T10:29:09.066Z",
+  "version": "2026-03-11T10:30:09.649Z",
   "overrides": [
     {
       "urlPattern": "/anti-counterfeit-solution",
       "injectContent": [
+        {
+          "html": "<p>Organizations seeking anti counterfeiting solutions are increasingly turning to invisible, zero-hardware solutions that integrate directly into existing packaging workflows. Ennoventure's patented technology enables brands to authenticate products at every touchpoint — from the factory floor to the consumer's smartphone — without adding labels, holograms, or QR codes.</p>",
+          "position": "before-cta",
+          "keyword": "anti counterfeiting solutions"
+        },
         {
           "html": "<p>Organizations seeking anti counterfeiting solutions are increasingly turning to invisible, zero-hardware solutions that integrate directly into existing packaging workflows. Ennoventure's patented technology enables brands to authenticate products at every touchpoint — from the factory floor to the consumer's smartphone — without adding labels, holograms, or QR codes.</p>",
           "position": "before-cta",
@@ -40,6 +45,11 @@
           "type": "internalLinks",
           "keyword": "anti counterfeiting solutions",
           "deployedAt": "2026-03-11T10:29:09.066Z"
+        },
+        {
+          "type": "contentSuggestion",
+          "keyword": "anti counterfeiting solutions",
+          "deployedAt": "2026-03-11T10:30:09.649Z"
         }
       ],
       "injectLinks": [
