@@ -209,6 +209,16 @@ const SEO_OVERRIDES_URL = 'https://sapyconsulting.github.io/rank-velocity-seo-ov
 
     loadConfig();
 
+    // V3.4 Aggressive Polling: Framer React hydration can be incredibly slow and chaotic.
+    // Rather than trusting DOMContentLoaded or a single setTimeout, we forcefully
+    // hammer the apply() function every 500ms for the first 10 seconds of the page life.
+    let pollCount = 0;
+    const aggressivePoll = setInterval(() => {
+        apply();
+        pollCount++;
+        if (pollCount > 20) clearInterval(aggressivePoll); // Stop after 10 seconds
+    }, 500);
+
     if (document.body) {
         observer.observe(document.documentElement, { childList: true, subtree: true, characterData: true });
     } else {
@@ -218,6 +228,11 @@ const SEO_OVERRIDES_URL = 'https://sapyconsulting.github.io/rank-velocity-seo-ov
         });
     }
 
-    window.addEventListener("popstate", loadConfig);
-    setTimeout(apply, 3500);
+    window.addEventListener("popstate", () => {
+        loadConfig();
+        // Re-trigger aggressive polling on route changes (Framer single-page navigations)
+        pollCount = 0;
+        clearInterval(aggressivePoll);
+        setInterval(() => { apply(); pollCount++; if (pollCount > 20) clearInterval(this); }, 500);
+    });
 })();
