@@ -1,5 +1,5 @@
 {
-  "version": "2026-03-11T10:28:18.090Z",
+  "version": "2026-03-11T10:29:09.066Z",
   "overrides": [
     {
       "urlPattern": "/anti-counterfeit-solution",
@@ -35,6 +35,11 @@
           "type": "meta",
           "keyword": "anti counterfeiting solutions",
           "deployedAt": "2026-03-11T10:28:18.090Z"
+        },
+        {
+          "type": "internalLinks",
+          "keyword": "anti counterfeiting solutions",
+          "deployedAt": "2026-03-11T10:29:09.066Z"
         }
       ],
       "injectLinks": [
