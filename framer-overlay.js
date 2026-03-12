@@ -1,5 +1,5 @@
 /**
- * Framer SEO Overlay Script — V6.2 (Ghost Header Text Bypass)
+ * Framer SEO Overlay Script — V6.3 (Strict Ghost Invisibility Patch)
  * ─────────────────────────────────────────────────────────────────
  *
  * Install in Framer:
@@ -57,14 +57,14 @@ const SEO_OVERRIDES_URL = 'https://sapyconsulting.github.io/rank-velocity-seo-ov
         // 2. Strict Hero-H1 Override (Shadow DOM for visible, raw text for SSR)
         if (config.h1) {
             const originalH1s = Array.from(document.querySelectorAll("h1"));
-
+            
             // Pass 1: Find the exact text string of the primary Hero H1
             if (!targetText && originalH1s.length > 0) {
                 for (const h of originalH1s) {
                     const rect = h.getBoundingClientRect();
                     const text = h.textContent.trim();
                     const cs = window.getComputedStyle(h);
-
+                    
                     // Identify the ACTUAL visual banner (not hidden SSR/accessibility)
                     if (text && rect.width >= 5 && rect.height >= 5 && cs.display !== 'none' && cs.position !== 'absolute') {
                         targetText = text;
@@ -79,16 +79,18 @@ const SEO_OVERRIDES_URL = 'https://sapyconsulting.github.io/rank-velocity-seo-ov
             if (targetText && originalH1s.length > 0) {
                 originalH1s.forEach((h1, index) => {
                     // Skip unrelated secondary H1s further down the page completely
-                    if (h1.textContent.trim() !== targetText) return;
+                    if (h1.textContent.trim() !== targetText) return; 
 
                     const rect = h1.getBoundingClientRect();
                     const cs = window.getComputedStyle(h1);
-
+                    
                     // Identify visually hidden Framer SSR tags (or tags stuffed behind navbar at top < 50)
                     const isGhost = rect.top < 50 || rect.width < 5 || rect.height < 5 || cs.display === 'none' || cs.opacity === '0';
 
                     if (isGhost) {
-                        // Swap raw text for SEO bots, but LEAVE native Framer CSS alone so it stays securely hidden!
+                         // Swap raw text for SEO bots, but FORCE invisibility so it never bleeds through nav bars!
+                        h1.style.setProperty('opacity', '0', 'important');
+                        h1.style.setProperty('pointer-events', 'none', 'important');
                         if (h1.textContent !== config.h1) {
                             h1.textContent = config.h1;
                         }
@@ -102,18 +104,18 @@ const SEO_OVERRIDES_URL = 'https://sapyconsulting.github.io/rank-velocity-seo-ov
 
                     const el = document.createElement("seo-h1");
                     el.setAttribute("data-index", index);
-
+                    
                     el.style.display = "flex";
                     el.style.width = "100%";
                     el.style.flexDirection = "column";
                     el.style.alignItems = cs.alignItems || "flex-start";
                     el.style.textAlign = cs.textAlign || "inherit";
                     if (cs.placeContent) el.style.placeContent = cs.placeContent;
-
+                    
                     const shadow = el.attachShadow({ mode: "open" });
                     const firstSpan = h1.querySelector('span');
                     const spanCs = firstSpan ? window.getComputedStyle(firstSpan) : cs;
-
+                    
                     const fontSize = spanCs.fontSize || cs.fontSize || '48px';
                     const fontWeight = spanCs.fontWeight || cs.fontWeight || 'bold';
                     const fontFamily = spanCs.fontFamily || cs.fontFamily || 'inherit';
