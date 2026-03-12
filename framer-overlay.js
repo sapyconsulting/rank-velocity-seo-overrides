@@ -1,5 +1,5 @@
 /**
- * Framer SEO Overlay Script — V6.4 (Aggressive Ghost Suppression)
+ * Framer SEO Overlay Script — V6.5 (Nuclear Ghost Eradication)
  * ─────────────────────────────────────────────────────────────────
  *
  * Install in Framer:
@@ -54,100 +54,90 @@ const SEO_OVERRIDES_URL = 'https://sapyconsulting.github.io/rank-velocity-seo-ov
             if (m.content !== config.metaDescription) m.content = config.metaDescription;
         }
 
-        // 2. Strict Hero-H1 Override
+        // 2. Strict Hero-H1 Override (Nuclear Policy)
         if (config.h1) {
             const originalH1s = Array.from(document.querySelectorAll("h1"));
             
-            // Pass 1: Identification
-            if (!targetText && originalH1s.length > 0) {
-                for (const h of originalH1s) {
-                    const rect = h.getBoundingClientRect();
-                    const text = h.textContent.trim();
-                    const cs = window.getComputedStyle(h);
-                    
-                    // Identify the ACTUAL visual banner (Hero is usually >150px from top)
-                    if (text && rect.width >= 5 && rect.height >= 5 && cs.display !== 'none' && rect.top > 120) {
-                        targetText = text;
-                        break;
-                    }
+            // Find the TRUE Hero H1 candidate
+            let heroCandidate = null;
+            let maxArea = 0;
+
+            originalH1s.forEach(h => {
+                const rect = h.getBoundingClientRect();
+                const area = rect.width * rect.height;
+                // Hero is usually large and NOT at the very top (y < 100 is almost always a ghost)
+                if (rect.top > 100 && area > maxArea) {
+                    maxArea = area;
+                    heroCandidate = h;
                 }
-                if (!targetText && originalH1s[0]) targetText = originalH1s[0].textContent.trim();
-            }
+            });
 
-            // Pass 2: Implementation
-            if (targetText && originalH1s.length > 0) {
-                originalH1s.forEach((h1, index) => {
-                    const text = h1.textContent.trim();
-                    if (text !== targetText && !text.includes(config.h1)) return; 
-
-                    const rect = h1.getBoundingClientRect();
-                    const cs = window.getComputedStyle(h1);
-                    
-                    // ANY H1 at the very top (y < 120) is a Ghost/SSR tag. Kill its visibility immediately.
-                    const isGhost = rect.top < 120 || rect.width < 10 || rect.height < 10 || cs.display === 'none' || cs.opacity === '0';
-
-                    if (isGhost) {
-                        h1.style.setProperty('opacity', '0', 'important');
-                        h1.style.setProperty('visibility', 'hidden', 'important');
-                        h1.style.setProperty('pointer-events', 'none', 'important');
-                        h1.style.setProperty('height', '0', 'important');
-                        h1.style.setProperty('overflow', 'hidden', 'important');
-                        if (h1.textContent !== config.h1) {
-                            h1.textContent = config.h1;
-                        }
-                        return;
-                    }
-
-                    // Otherwise, this is the main VISIBLE Hero H1.
-                    if (document.querySelector(`seo-h1[data-index="${index}"]`)) return;
-
-                    const container = h1.parentElement;
-                    if (!container) return;
-
-                    const el = document.createElement("seo-h1");
-                    el.setAttribute("data-index", index);
-                    el.style.display = "flex";
-                    el.style.width = "100%";
-                    el.style.flexDirection = "column";
-                    el.style.alignItems = cs.alignItems || "flex-start";
-                    el.style.textAlign = cs.textAlign || "inherit";
-                    
-                    const shadow = el.attachShadow({ mode: "open" });
-                    const firstSpan = h1.querySelector('span');
-                    const spanCs = firstSpan ? window.getComputedStyle(firstSpan) : cs;
-                    
-                    const fontSize = spanCs.fontSize || cs.fontSize || '48px';
-                    const fontWeight = spanCs.fontWeight || cs.fontWeight || '700';
-                    const fontFamily = spanCs.fontFamily || cs.fontFamily || 'inherit';
-                    const color = spanCs.color || cs.color || 'inherit';
-                    const letterSpacing = spanCs.letterSpacing || cs.letterSpacing || 'normal';
-                    const lineHeight = spanCs.lineHeight || cs.lineHeight || '1.2';
-                    const textAlign = spanCs.textAlign || cs.textAlign || 'inherit';
-
-                    shadow.innerHTML = `
-                        <h1 style="
-                            font-size: ${fontSize};
-                            font-weight: ${fontWeight};
-                            font-family: ${fontFamily};
-                            color: ${color};
-                            letter-spacing: ${letterSpacing};
-                            line-height: ${lineHeight};
-                            text-align: ${textAlign};
-                            margin: 0;
-                            padding: 0;
-                            display: inline-block;
-                        ">${config.h1}</h1>
-                    `;
-
-                    container.insertBefore(el, h1);
+            // If we found a hero, we will replace it.
+            // EVERY OTHER H1 on the page (including the ghost at y=32) gets NUKED.
+            originalH1s.forEach((h1, index) => {
+                const rect = h1.getBoundingClientRect();
+                const cs = window.getComputedStyle(h1);
+                
+                if (h1 !== heroCandidate) {
+                    // This is a ghost or secondary tag. 
+                    // We update the text for SEO, but FORCE it to be 100% invisible.
                     h1.style.setProperty('display', 'none', 'important');
                     h1.style.setProperty('opacity', '0', 'important');
                     h1.style.setProperty('visibility', 'hidden', 'important');
-                });
-            }
+                    h1.style.setProperty('pointer-events', 'none', 'important');
+                    h1.style.setProperty('position', 'absolute', 'important');
+                    h1.style.setProperty('top', '-9999px', 'important');
+                    
+                    if (h1.textContent !== config.h1) {
+                        h1.textContent = config.h1;
+                    }
+                    return;
+                }
+
+                // If this IS the Hero Candidate, inject the Shadow DOM replacement
+                if (document.querySelector(`seo-h1[data-index="${index}"]`)) return;
+
+                const container = h1.parentElement;
+                if (!container) return;
+
+                const el = document.createElement("seo-h1");
+                el.setAttribute("data-index", index);
+                el.style.display = "flex";
+                el.style.width = "100%";
+                el.style.flexDirection = "column";
+                el.style.alignItems = cs.alignItems || "flex-start";
+                el.style.textAlign = cs.textAlign || "inherit";
+                
+                const shadow = el.attachShadow({ mode: "open" });
+                const firstSpan = h1.querySelector('span');
+                const spanCs = firstSpan ? window.getComputedStyle(firstSpan) : cs;
+                
+                const fontSize = spanCs.fontSize || cs.fontSize || '48px';
+                const fontWeight = spanCs.fontWeight || cs.fontWeight || '700';
+                const fontFamily = spanCs.fontFamily || cs.fontFamily || 'inherit';
+                const color = spanCs.color || cs.color || 'inherit';
+                const lineHeight = spanCs.lineHeight || cs.lineHeight || '1.2';
+
+                shadow.innerHTML = `
+                    <h1 style="
+                        font-size: ${fontSize};
+                        font-weight: ${fontWeight};
+                        font-family: ${fontFamily};
+                        color: ${color};
+                        line-height: ${lineHeight};
+                        margin: 0;
+                        padding: 0;
+                        text-align: inherit;
+                        display: inline-block;
+                    ">${config.h1}</h1>
+                `;
+
+                container.insertBefore(el, h1);
+                h1.style.setProperty('display', 'none', 'important');
+            });
         }
 
-        // 3. Links & Content injection
+        // 3. Links & Content
         const anchor = findAnchorParagraph();
         if (config.injectLinks?.length && !document.querySelector("seo-nav") && anchor && anchor.parentNode) {
             const el = document.createElement("seo-nav");
@@ -162,17 +152,6 @@ const SEO_OVERRIDES_URL = 'https://sapyconsulting.github.io/rank-velocity-seo-ov
                     </ul>
                 </nav>`;
             anchor.parentNode.insertBefore(el, anchor.nextSibling);
-        }
-
-        if (config.injectContent?.length && !document.querySelector("seo-content") && anchor && anchor.parentNode) {
-            const el = document.createElement("seo-content");
-            const shadow = el.attachShadow({ mode: "open" });
-            shadow.innerHTML = config.injectContent.map(c =>
-                `<div style="margin:16px 0;line-height:1.6;font-size:16px;color:inherit;font-family:inherit;">${c.html}</div>`
-            ).join("");
-            const navEl = document.querySelector("seo-nav");
-            const insertAfter = navEl || anchor;
-            insertAfter.parentNode.insertBefore(el, insertAfter.nextSibling);
         }
     }
 
@@ -196,7 +175,6 @@ const SEO_OVERRIDES_URL = 'https://sapyconsulting.github.io/rank-velocity-seo-ov
         const urlChanged = window.location.pathname !== lastUrl;
         if (urlChanged) {
             lastUrl = window.location.pathname;
-            targetText = null;
             document.querySelectorAll("seo-h1, seo-nav, seo-content").forEach(e => e.remove());
         }
 
@@ -210,22 +188,14 @@ const SEO_OVERRIDES_URL = 'https://sapyconsulting.github.io/rank-velocity-seo-ov
     const aggressivePoll = setInterval(() => {
         apply();
         pollCount++;
-        if (pollCount > 20) clearInterval(aggressivePoll);
+        if (pollCount > 30) clearInterval(aggressivePoll);
     }, 500);
 
-    if (document.body) {
-        observer.observe(document.documentElement, { childList: true, subtree: true, characterData: true });
-    } else {
-        document.addEventListener('DOMContentLoaded', () => {
-            observer.observe(document.documentElement, { childList: true, subtree: true, characterData: true });
-            apply();
-        });
-    }
+    observer.observe(document.documentElement, { childList: true, subtree: true, characterData: true });
 
     window.addEventListener("popstate", () => {
         loadConfig();
         pollCount = 0;
-        targetText = null;
         clearInterval(aggressivePoll);
         const newPoll = setInterval(() => { apply(); pollCount++; if (pollCount > 20) clearInterval(newPoll); }, 500);
     });
