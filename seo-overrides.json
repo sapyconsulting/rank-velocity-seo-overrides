@@ -1,5 +1,5 @@
 {
-  "version": "2026-03-13T12:07:33.831Z",
+  "version": "2026-03-13T12:08:37.804Z",
   "overrides": [
     {
       "urlPattern": "/anti-counterfeit-solution",
@@ -260,6 +260,19 @@
         }
       ],
       "h1": "Direct-to-Farmer \"On-Field\" Brand Protection for Agrochemical Brand"
+    },
+    {
+      "urlPattern": "/resources/case-studies/fmcg-consumer-brands-case-study",
+      "title": "FMCG & Consumer Brands Brand Protection Case Study: Counterf",
+      "metaDescription": "See how Ennoventure solved Counterfeiters Caught in the Act – Real-Time Interception Prevents $2.8 Million in Losses in the FMCG & Consumer Brands sector. A lea",
+      "h1": "Counterfeiters Caught in the Act – Real-Time Interception Prevents $2.8 Million in Losses",
+      "deployments": [
+        {
+          "type": "meta",
+          "keyword": "Topical Authority",
+          "deployedAt": "2026-03-13T12:08:37.804Z"
+        }
+      ]
     }
   ]
 }
