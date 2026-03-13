@@ -1,5 +1,5 @@
 {
-  "version": "2026-03-11T15:19:38.765Z",
+  "version": "2026-03-13T11:52:45.162Z",
   "overrides": [
     {
       "urlPattern": "/anti-counterfeit-solution",
@@ -212,6 +212,18 @@
           "html": "<p>Organizations seeking brand protection solutions are increasingly turning to invisible, zero-hardware solutions that integrate directly into existing packaging workflows. Ennoventure's patented technology enables brands to authenticate products at every touchpoint — from the factory floor to the consumer's smartphone — without adding labels, holograms, or QR codes.</p>",
           "position": "before-cta",
           "keyword": "brand protection solutions"
+        }
+      ]
+    },
+    {
+      "urlPattern": "/resources/case-studies/fmcg-spice-brand-recovers-millions",
+      "title": " | Anti-Counterfeit Solutions",
+      "metaDescription": "Comprehensive guide to fmcg spice brand recovers millions. Discover how Ennoventure protects brands worldwide.",
+      "deployments": [
+        {
+          "type": "meta",
+          "keyword": "Topical Content Expansion",
+          "deployedAt": "2026-03-13T11:52:45.162Z"
         }
       ]
     }
