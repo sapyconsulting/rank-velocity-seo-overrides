@@ -1,5 +1,5 @@
 {
-  "version": "2026-03-13T12:08:37.804Z",
+  "version": "2026-03-13T12:08:50.522Z",
   "overrides": [
     {
       "urlPattern": "/anti-counterfeit-solution",
@@ -271,6 +271,19 @@
           "type": "meta",
           "keyword": "Topical Authority",
           "deployedAt": "2026-03-13T12:08:37.804Z"
+        }
+      ]
+    },
+    {
+      "urlPattern": "/resources/case-studies/real-time-anti-counterfeit-interception-agro",
+      "title": "Agro Brand Protection Case Study: Real-Time Anti-Counterfeit",
+      "metaDescription": "See how Ennoventure solved Real-Time Anti-Counterfeit Interception for a $25 Billion Agro-Industrial Conglomerate in the Agro sector. A $25B agro-industrial con",
+      "h1": "Real-Time Anti-Counterfeit Interception for a $25 Billion Agro-Industrial Conglomerate",
+      "deployments": [
+        {
+          "type": "meta",
+          "keyword": "Topical Authority",
+          "deployedAt": "2026-03-13T12:08:50.522Z"
         }
       ]
     }
