@@ -1,5 +1,5 @@
 {
-  "version": "2026-03-13T12:02:59.646Z",
+  "version": "2026-03-13T12:07:33.831Z",
   "overrides": [
     {
       "urlPattern": "/anti-counterfeit-solution",
@@ -240,8 +240,8 @@
     },
     {
       "urlPattern": "/resources/case-studies/on-field-brand-protection-agrochemical",
-      "title": " | Anti-Counterfeit Solutions",
-      "metaDescription": "Comprehensive guide to on field brand protection agrochemical. Discover how Ennoventure protects brands worldwide.",
+      "title": "Agrochemicals Brand Protection Case Study: Direct-to-Farmer ",
+      "metaDescription": "See how Ennoventure solved Direct-to-Farmer \"On-Field\" Brand Protection for Agrochemical Brand in the Agrochemicals sector. An international agrochemicals brand",
       "deployments": [
         {
           "type": "meta",
@@ -252,8 +252,14 @@
           "type": "meta",
           "keyword": "Topical Content Expansion",
           "deployedAt": "2026-03-13T11:54:09.662Z"
+        },
+        {
+          "type": "meta",
+          "keyword": "Topical Authority",
+          "deployedAt": "2026-03-13T12:07:33.831Z"
         }
-      ]
+      ],
+      "h1": "Direct-to-Farmer \"On-Field\" Brand Protection for Agrochemical Brand"
     }
   ]
 }
