@@ -1,5 +1,5 @@
 {
-  "version": "2026-03-13T11:54:09.662Z",
+  "version": "2026-03-13T12:02:59.646Z",
   "overrides": [
     {
       "urlPattern": "/anti-counterfeit-solution",
@@ -217,8 +217,8 @@
     },
     {
       "urlPattern": "/resources/case-studies/fmcg-spice-brand-recovers-millions",
-      "title": " | Anti-Counterfeit Solutions",
-      "metaDescription": "Comprehensive guide to fmcg spice brand recovers millions. Discover how Ennoventure protects brands worldwide.",
+      "title": "FMCG Brand Protection Case Study: Leading FMCG Spice Brand |",
+      "metaDescription": "See how Ennoventure solved Leading FMCG Spice Brand Recovers $7.5 Million Through Invisible Authentication in the FMCG sector. A leading FMCG spice brand wanted",
       "deployments": [
         {
           "type": "meta",
@@ -229,8 +229,14 @@
           "type": "meta",
           "keyword": "Topical Content Expansion",
           "deployedAt": "2026-03-13T11:53:28.288Z"
+        },
+        {
+          "type": "meta",
+          "keyword": "Topical Authority",
+          "deployedAt": "2026-03-13T12:02:59.646Z"
         }
-      ]
+      ],
+      "h1": "Leading FMCG Spice Brand Recovers $7.5 Million Through Invisible Authentication"
     },
     {
       "urlPattern": "/resources/case-studies/on-field-brand-protection-agrochemical",
