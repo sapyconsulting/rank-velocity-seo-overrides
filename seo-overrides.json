@@ -1,5 +1,5 @@
 {
-  "version": "2026-03-13T11:53:28.288Z",
+  "version": "2026-03-13T11:53:51.575Z",
   "overrides": [
     {
       "urlPattern": "/anti-counterfeit-solution",
@@ -229,6 +229,18 @@
           "type": "meta",
           "keyword": "Topical Content Expansion",
           "deployedAt": "2026-03-13T11:53:28.288Z"
+        }
+      ]
+    },
+    {
+      "urlPattern": "/resources/case-studies/on-field-brand-protection-agrochemical",
+      "title": " | Anti-Counterfeit Solutions",
+      "metaDescription": "Comprehensive guide to on field brand protection agrochemical. Discover how Ennoventure protects brands worldwide.",
+      "deployments": [
+        {
+          "type": "meta",
+          "keyword": "Topical Content Expansion",
+          "deployedAt": "2026-03-13T11:53:51.575Z"
         }
       ]
     }
