@@ -1,5 +1,5 @@
 {
-  "version": "2026-03-13T12:08:50.522Z",
+  "version": "2026-03-16T08:34:17.363Z",
   "overrides": [
     {
       "urlPattern": "/anti-counterfeit-solution",
@@ -284,6 +284,19 @@
           "type": "meta",
           "keyword": "Topical Authority",
           "deployedAt": "2026-03-13T12:08:50.522Z"
+        }
+      ]
+    },
+    {
+      "urlPattern": "/",
+      "title": "Privacy And Policy - Ennoventure",
+      "metaDescription": "Discover innovative insights on privacy and policy. Ennoventure's invisible technology ensures privacy and policy remains secure and authenticated.",
+      "h1": "privacy and policy",
+      "deployments": [
+        {
+          "type": "meta",
+          "keyword": "Topical Authority",
+          "deployedAt": "2026-03-16T08:34:17.362Z"
         }
       ]
     }
